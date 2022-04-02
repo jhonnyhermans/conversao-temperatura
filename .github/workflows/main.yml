@@ -1,4 +1,4 @@
-name: CI
+name: CI-CD
 
 on:
   push:
@@ -26,3 +26,20 @@ jobs:
           tags: |
             jhonnyhermans/conversao-temperatura:latest
             jhonnyhermans/conversao-temperatura:${{ github.run_number }}
+            
+  CD:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Kubernetes Set Context
+        uses: Azure/k8s-set-context@v2
+        with: 
+          method: kubeconfig
+          kubeconfig: ${{ secrets.K8S_KUBECONFIG }}
+      - name: Deploy to Kubernetes cluster
+        uses: Azure/k8s-deploy@v3.0
+        with:
+          images: jhonnyhermans/conversao-temperatura:${{ github.run_number }}
+          manifests: |
+            k8s/deployment.yaml
+          
